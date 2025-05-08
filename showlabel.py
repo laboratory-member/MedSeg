@@ -7,8 +7,8 @@ import matplotlib
 matplotlib.use('TkAgg')
 
 # 加载图像和标签
-image_array = nib.load("word_0001.nii.gz").get_fdata()
-label_array = nib.load("word_0001.nii_processed.nii").get_fdata().astype(int)
+image_array = nib.load("word_0001_0.nii.gz").get_fdata()
+label_array = nib.load("word_0001.nii.gz").get_fdata().astype(int)
 
 print(f"Image shape: {image_array.shape}, Label shape: {label_array.shape}")
 print(f"Label unique values: {np.unique(label_array)}")
