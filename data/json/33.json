@@ -1,0 +1,44 @@
+{
+    "case_id": 33,
+    "geometry": {
+        "origin": [
+            -257.5,
+            -170.5,
+            -903.5
+        ],
+        "spacing": [
+            1.00585938,
+            1.00585938,
+            5.0
+        ],
+        "size": [
+            512,
+            512,
+            114
+        ],
+        "direction": [
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ]
+    },
+    "label_mapping": {
+        "Rectum": 8,
+        "Bladder": 1,
+        "Femur_Head_R": 4,
+        "Femur_Head_L": 3,
+        "SmallIntestine": 9,
+        "Colon": 2,
+        "Stomach": 11
+    },
+    "source_files": {
+        "rs_file": "RS.141001723.CT_1PS1.dcm",
+        "ct_series_uid": "1.2.840.113704.1.111.1284.1413339428.6"
+    }
+}

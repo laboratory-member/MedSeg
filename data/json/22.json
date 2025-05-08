@@ -1,0 +1,41 @@
+{
+    "case_id": 22,
+    "geometry": {
+        "origin": [
+            -222.5,
+            -127.5,
+            -672.5
+        ],
+        "spacing": [
+            0.869140625,
+            0.869140625,
+            5.0
+        ],
+        "size": [
+            512,
+            512,
+            69
+        ],
+        "direction": [
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ]
+    },
+    "label_mapping": {
+        "Bladder": 1,
+        "Femur_Head_R": 4,
+        "Femur_Head_L": 3,
+        "SmallIntestine": 9
+    },
+    "source_files": {
+        "rs_file": "RS.130800833.CT_1.dcm",
+        "ct_series_uid": "1.2.840.113704.1.111.6204.1375927531.6"
+    }
+}

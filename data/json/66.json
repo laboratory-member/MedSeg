@@ -1,0 +1,48 @@
+{
+    "case_id": 66,
+    "geometry": {
+        "origin": [
+            -253.5,
+            -153.5,
+            -3.5
+        ],
+        "spacing": [
+            0.990234375,
+            0.990234375,
+            5.0
+        ],
+        "size": [
+            512,
+            512,
+            105
+        ],
+        "direction": [
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ]
+    },
+    "label_mapping": {
+        "SmallIntestine": 9,
+        "Rectum": 8,
+        "Bladder": 1,
+        "Femur_Head_R": 4,
+        "Femur_Head_L": 3,
+        "Kidney_R": 6,
+        "Kidney_L": 5,
+        "Stomach": 11,
+        "Liver": 7,
+        "SpinalCord": 10,
+        "Colon": 2
+    },
+    "source_files": {
+        "rs_file": "RS.200708122.2020-07-21 15_18.dcm",
+        "ct_series_uid": "1.2.840.113704.1.111.6508.1595315858.6"
+    }
+}
