@@ -10,7 +10,7 @@ matplotlib.use('TkAgg')
 target_label = 1
 
 # 加载图像和标签
-image_array = nib.load("1-0.nii.gz").get_fdata()
+image_array = nib.load("0.nii.gz").get_fdata()
 label_array = nib.load("1.nii.gz").get_fdata().astype(int)
 
 # 转换为二分类：保留 target_label 为 1，其余为 0

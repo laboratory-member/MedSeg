@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from monai.utils import first, set_determinism
 from monai.transforms import (
     AsDiscrete,
@@ -28,19 +30,32 @@ import tempfile
 import shutil
 import os
 import glob
+import nibabel as nib
+import numpy as np
 
 print_config()
 
 root_dir = "./path"  # 将root_dir指向当前目录的path文件夹
 data_dir = "./data"  # 将data_dir指向当前目录的data文件夹
 
-train_images = sorted(glob.glob(os.path.join(data_dir, "ct", "*.nii.gz")))#储存文件路径的列表
-train_labels = sorted(glob.glob(os.path.join(data_dir, "label", "*.nii.gz")))
-data_dicts = [{"image": image_name, "label": label_name} for image_name, label_name in zip(train_images, train_labels)]
-#{"image": "/path/to/ct.nii.gz", "label": "/path/to/label.nii.gz"}
-train_files, val_files = data_dicts[:-5], data_dicts[-5:]
+train_images = sorted(glob.glob(os.path.join(data_dir, "ct", "*.nii.gz")))
+train_labels = sorted(glob.glob(os.path.join(data_dir, "label8", "*.nii.gz")))
+def check_if_all_zero(label_file):
+    # 载入标签文件
+    label_img = nib.load(label_file)
+    label_data = label_img.get_fdata()
+    # 判断标签数据是否全为0
+    return np.all(label_data == 0)
 
-set_determinism(seed=0)#使训练可重复
+# 创建数据集字典，跳过全零标签的文件
+data_dicts = []
+for image_name, label_name in zip(train_images, train_labels):
+    if not check_if_all_zero(label_name):
+        data_dicts.append({"image": image_name, "label": label_name})
+
+train_files, val_files = data_dicts[:-3], data_dicts[-3:]
+
+set_determinism(seed=0)
 
 train_transforms = Compose(
     [
@@ -48,12 +63,12 @@ train_transforms = Compose(
         EnsureChannelFirstd(keys=["image", "label"]),
         ScaleIntensityRanged(
             keys=["image"],
-            a_min=-100,
-            a_max=200,
+            a_min=-57,
+            a_max=164,
             b_min=0.0,
             b_max=1.0,
             clip=True,
-        ),#归一化图像强度值，a_min/a_max的范围可以根据器官不同而改变，这里我们将具体器官与骨骼分离
+        ),
         CropForegroundd(keys=["image", "label"], source_key="image"),
         Orientationd(keys=["image", "label"], axcodes="RAS"),
         Spacingd(keys=["image", "label"], pixdim=(1.5, 1.5, 2.0), mode=("bilinear", "nearest")),
@@ -82,8 +97,8 @@ val_transforms = Compose(
         EnsureChannelFirstd(keys=["image", "label"]),
         ScaleIntensityRanged(
             keys=["image"],
-            a_min=-100,
-            a_max=200,
+            a_min=-57,
+            a_max=164,
             b_min=0.0,
             b_max=1.0,
             clip=True,
@@ -125,7 +140,7 @@ device = torch.device("cuda:0")
 model = UNet(
     spatial_dims=3,
     in_channels=1,
-    out_channels=12,  # 输出通道数设置为12
+    out_channels=2,
     channels=(16, 32, 64, 128, 256),
     strides=(2, 2, 2, 2),
     num_res_units=2,
@@ -141,8 +156,8 @@ best_metric = -1
 best_metric_epoch = -1
 epoch_loss_values = []
 metric_values = []
-post_pred = Compose([AsDiscrete(argmax=True, to_onehot=12)])
-post_label = Compose([AsDiscrete(to_onehot=12)])
+post_pred = Compose([AsDiscrete(argmax=True, to_onehot=2)])
+post_label = Compose([AsDiscrete(to_onehot=2)])
 
 for epoch in range(max_epochs):
     print("-" * 10)
@@ -247,8 +262,8 @@ val_org_transforms = Compose(
         Spacingd(keys=["image"], pixdim=(1.5, 1.5, 2.0), mode="bilinear"),
         ScaleIntensityRanged(
             keys=["image"],
-            a_min=-100,
-            a_max=200,
+            a_min=-57,
+            a_max=164,
             b_min=0.0,
             b_max=1.0,
             clip=True,
@@ -273,8 +288,8 @@ post_transforms = Compose(
             to_tensor=True,
             device="cpu",
         ),
-        AsDiscreted(keys="pred", argmax=True, to_onehot=12),
-        AsDiscreted(keys="label", to_onehot=12),
+        AsDiscreted(keys="pred", argmax=True, to_onehot=2),
+        AsDiscreted(keys="label", to_onehot=2),
     ]
 )
 
@@ -299,73 +314,3 @@ with torch.no_grad():
 
 print("Metric on original image spacing: ", metric_org)
 
-test_images = sorted(glob.glob(os.path.join(data_dir, "imagesTs", "*.nii.gz")))
-
-test_data = [{"image": image} for image in test_images]
-
-
-test_org_transforms = Compose(
-    [
-        LoadImaged(keys="image"),
-        EnsureChannelFirstd(keys="image"),
-        Orientationd(keys=["image"], axcodes="RAS"),
-        Spacingd(keys=["image"], pixdim=(1.5, 1.5, 2.0), mode="bilinear"),
-        ScaleIntensityRanged(
-            keys=["image"],
-            a_min=-100,
-            a_max=200,
-            b_min=0.0,
-            b_max=1.0,
-            clip=True,
-        ),
-        CropForegroundd(keys=["image"], source_key="image"),
-    ]
-)
-
-test_org_ds = Dataset(data=test_data, transform=test_org_transforms)
-
-test_org_loader = DataLoader(test_org_ds, batch_size=1, num_workers=4)
-
-post_transforms = Compose(
-    [
-        Invertd(
-            keys="pred",
-            transform=test_org_transforms,
-            orig_keys="image",
-            meta_keys="pred_meta_dict",
-            orig_meta_keys="image_meta_dict",
-            meta_key_postfix="meta_dict",
-            nearest_interp=False,
-            to_tensor=True,
-        ),
-        AsDiscreted(keys="pred", argmax=True, to_onehot=12),
-        SaveImaged(keys="pred", meta_keys="pred_meta_dict", output_dir="./out", output_postfix="seg", resample=False),
-    ]
-)
-
-from monai.transforms import LoadImage
-loader = LoadImage()
-
-model.load_state_dict(torch.load(os.path.join(root_dir, "best_metric_model.pth"), weights_only=True))
-model.eval()
-
-with torch.no_grad():
-    for test_data in test_org_loader:
-        test_inputs = test_data["image"].to(device)
-        roi_size = (160, 160, 160)
-        sw_batch_size = 4
-        test_data["pred"] = sliding_window_inference(test_inputs, roi_size, sw_batch_size, model)
-
-        test_data = [post_transforms(i) for i in decollate_batch(test_data)]
-
-         # uncomment the following lines to visualize the predicted results
-        test_output = from_engine(["pred"])(test_data)
-
-        original_image = loader(test_output[0].meta["filename_or_obj"])
-
-        plt.figure("check", (18, 6))
-        plt.subplot(1, 2, 1)
-        plt.imshow(original_image[:, :, 20], cmap="gray")
-        plt.subplot(1, 2, 2)
-        plt.imshow(test_output[0].detach().cpu()[1, :, :, 20])
-        plt.show()
