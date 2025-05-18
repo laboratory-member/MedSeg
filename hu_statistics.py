@@ -2,10 +2,11 @@ import os
 import nibabel as nib
 import numpy as np
 import pandas as pd
+from tqdm import tqdm  # 进度条模块
 
 # 文件夹路径
-ct_dir = 'data/ct'
-label_dir = 'data/label'
+ct_dir = 'WORD Dataset 11/ct'
+label_dir = 'WORD Dataset 11/label'
 
 # 标签范围（不含背景0）
 label_ids = range(1, 12)
@@ -13,13 +14,16 @@ label_ids = range(1, 12)
 # 保存结果的列表
 results = []
 
-for i in range(1, 108):  # 从1到107
-    filename = f"{i}.nii.gz"
+# 获取所有 .nii.gz 文件名（以ct文件为基准）
+nii_files = [f for f in os.listdir(ct_dir) if f.endswith('.nii.gz')]
+
+# 遍历文件并显示进度
+for filename in tqdm(nii_files, desc="Processing files"):
     ct_path = os.path.join(ct_dir, filename)
     label_path = os.path.join(label_dir, filename)
 
-    if not os.path.exists(ct_path) or not os.path.exists(label_path):
-        print(f"跳过不存在的文件: {filename}")
+    if not os.path.exists(label_path):
+        print(f"跳过无对应标签的文件: {filename}")
         continue
 
     try:

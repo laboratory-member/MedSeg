@@ -36,7 +36,7 @@ import numpy as np
 root_dir = "./path"  # 将root_dir指向当前目录的path文件夹
 data_dir = "./data"  # 将data_dir指向当前目录的data文件夹
 
-test_images = sorted(glob.glob(os.path.join(data_dir, "ct", "1.nii.gz")))
+test_images = sorted(glob.glob(os.path.join(data_dir, "ct", "*.nii.gz")))
 
 test_data = [{"image": image} for image in test_images]
 

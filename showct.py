@@ -6,7 +6,7 @@ import matplotlib
 matplotlib.use('TkAgg') # 用于滚动查看nii.gz
 
 # 使用 nibabel库读取图像
-image_path = r"1-0.nii.gz"
+image_path = r"4.nii.gz"
 image_obj = nib.load(image_path)
 print(f'文件路径： {image_path}')
 print(f'图像类型： {type(image_obj)}')
